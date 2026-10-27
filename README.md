@@ -22,7 +22,7 @@ Base para arrancar un proyecto web con Next.js 16 y Supabase sin partir de cero:
 | Drizzle   | 0.45 + kit 0.31    |
 | Supabase  | supabase-js 2, ssr |
 | Zustand   | 5                  |
-| Vitest    | 4                  |
+| Vitest    | 5                  |
 
 ## Crear un proyecto desde el template
 

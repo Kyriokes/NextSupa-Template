@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_PHOTO_BYTES, avatarPathFromUrl, ownedStoragePath, validatePhoto } from "./photo";
+import { MAX_PHOTO_BYTES, avatarPathFromUrl, isAllowedPhotoUrl, ownedStoragePath, validatePhoto } from "./photo";
 
 const JPEG = [0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0];
 const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0];
@@ -68,5 +68,14 @@ describe("users/photo", () => {
     const prefix = `${base}/storage/v1/object/public/avatars`;
     expect(avatarPathFromUrl(`${prefix}/u-2/abc.jpg`, base, "u-1")).toBeNull();
     expect(avatarPathFromUrl(`${prefix}/u-1/../u-2/abc.jpg`, base, "u-1")).toBeNull();
+  });
+
+  it("solo se muestran fotos de Google o del bucket propio", () => {
+    const base = "https://abcdefghijklmnop.supabase.co";
+    expect(isAllowedPhotoUrl("https://lh3.googleusercontent.com/a/x", base)).toBe(true);
+    expect(isAllowedPhotoUrl(`${base}/storage/v1/object/public/avatars/u-1/a.jpg`, base)).toBe(true);
+    expect(isAllowedPhotoUrl(`${base}/storage/v1/object/public/otros/u-1/a.jpg`, base)).toBe(false);
+    expect(isAllowedPhotoUrl("https://evil.test/a.jpg", base)).toBe(false);
+    expect(isAllowedPhotoUrl(null, base)).toBe(false);
   });
 });

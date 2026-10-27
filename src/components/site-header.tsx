@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
 import { SITE_NAME } from "@/lib/metadata";
 import { navigationFor } from "@/modules/users/navigation";
+import { isAllowedPhotoUrl } from "@/modules/users/photo";
 import { isSuspended } from "@/modules/users/roles";
 import { getCurrentUser } from "@/modules/users/session";
 
@@ -40,7 +41,9 @@ async function AccountArea() {
       </form>
     );
   }
-  return <UserMenu name={user.name} photoUrl={user.photoUrl ?? null} groups={navigationFor(user.roles)} />;
+  // Solo se pasa la foto si next/image la va a aceptar (ver isAllowedPhotoUrl).
+  const photoUrl = isAllowedPhotoUrl(user.photoUrl, process.env.NEXT_PUBLIC_SUPABASE_URL!) ? user.photoUrl : null;
+  return <UserMenu name={user.name} photoUrl={photoUrl} groups={navigationFor(user.roles)} />;
 }
 
 // Encabezado sobre el color primario: nombre del sitio, enlaces, modo de

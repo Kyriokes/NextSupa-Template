@@ -1,7 +1,7 @@
-import Image from "next/image";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { z } from "zod";
+import { Avatar } from "@/components/avatar";
 import { NoAccess } from "@/components/no-access";
 import { Pager } from "@/components/pager";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
         {result.users.map((u) => (
           <li key={u.id} className="flex flex-col gap-3 rounded-lg border p-4">
             <div className="flex items-center gap-3">
-              {u.photoUrl && <Image src={u.photoUrl} alt="" width={40} height={40} className="rounded-full" />}
+              <Avatar name={u.name} photoUrl={u.photoUrl} size={40} />
               <div>
                 <p className="font-medium">
                   {u.name}

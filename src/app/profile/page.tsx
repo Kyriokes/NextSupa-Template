@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { Avatar } from "@/components/avatar";
 import { LoginButton } from "@/components/login-button";
 import { privateMetadata } from "@/lib/metadata";
 import { ROLE_LABELS } from "@/modules/users/roles";
@@ -27,16 +27,7 @@ async function Profile() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex items-center gap-4">
-        {user.photoUrl ? (
-          <Image src={user.photoUrl} alt="" width={64} height={64} className="rounded-full" />
-        ) : (
-          <span
-            className="flex size-16 items-center justify-center rounded-full bg-muted text-2xl font-medium"
-            aria-hidden
-          >
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-        )}
+        <Avatar name={user.name} photoUrl={user.photoUrl} size={64} />
         <div>
           <p className="font-medium">{user.name}</p>
           <p className="text-sm text-muted-foreground">{user.email}</p>

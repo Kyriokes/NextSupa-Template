@@ -59,3 +59,14 @@ export function ownedStoragePath(
 export function avatarPathFromUrl(url: string | null | undefined, supabaseUrl: string, userId: string): string | null {
   return ownedStoragePath(url, supabaseUrl, AVATARS_BUCKET, userId);
 }
+
+// Dónde pueden vivir las fotos de perfil: Google (primer ingreso) y nuestro
+// bucket. Misma lista que images.remotePatterns en next.config.ts: una URL
+// de otro lado haría fallar next/image al renderizar, así que no se le pasa.
+export function isAllowedPhotoUrl(url: string | null | undefined, supabaseUrl: string): url is string {
+  if (!url) return false;
+  return (
+    url.startsWith("https://lh3.googleusercontent.com/") ||
+    url.startsWith(`${supabaseUrl}/storage/v1/object/public/${AVATARS_BUCKET}/`)
+  );
+}
