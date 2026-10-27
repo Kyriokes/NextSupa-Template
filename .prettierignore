@@ -1,0 +1,4 @@
+# Generados: los escriben Next y drizzle-kit.
+drizzle/
+next-env.d.ts
+package-lock.json

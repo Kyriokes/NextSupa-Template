@@ -1,0 +1,48 @@
+# Formato, lint, tipos, tests y build en cada PR y en cada push a main.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # El build prerenderiza páginas que leen la base (contenido y paleta):
+    # se usa un Postgres de prueba con la migración aplicada.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Valores de prueba: el build no llama a Supabase, solo a la base de arriba.
+      NEXT_PUBLIC_SUPABASE_URL: https://ci.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci
+      SUPABASE_SECRET_KEY: ci
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      # En Supabase auth.users ya existe; en este Postgres se crea una mínima
+      # para que la migración pueda referenciarla.
+      - name: Base de prueba
+        run: |
+          psql "$DATABASE_URL" -c "create schema if not exists auth; create table if not exists auth.users (id uuid primary key);"
+          npx drizzle-kit migrate
+      - run: npm run build

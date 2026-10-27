@@ -1,0 +1,61 @@
+import { contrastRatio, mix, type Hex } from "./color";
+import { MIN_TEXT_CONTRAST, onColorOf, sanitizePalette, type Palette, type ThemeMode } from "./palette";
+
+// Traduce una paleta a las variables CSS que usa shadcn/ui.
+// Los colores de gráficos (--chart-*) y el radio no dependen de la paleta.
+export function toCssVariables(p: Palette): Record<string, Hex> {
+  const mutedText = mix(p.foreground, p.background, 0.65);
+  const border = mix(p.background, p.foreground, 0.85);
+
+  const vars: Record<string, Hex> = {
+    "--background": p.background,
+    "--card": p.background,
+    "--popover": p.background,
+    "--sidebar": p.background,
+    "--foreground": p.foreground,
+    "--card-foreground": p.foreground,
+    "--popover-foreground": p.foreground,
+    "--sidebar-foreground": p.foreground,
+    "--primary": p.primary,
+    "--primary-foreground": onColorOf(p, "primary"),
+    "--sidebar-primary": p.primary,
+    "--sidebar-primary-foreground": onColorOf(p, "primary"),
+    // El anillo de foco usa el color del texto: un primario claro (amarillo)
+    // sobre fondo blanco no se distinguiría.
+    "--ring": p.foreground,
+    "--sidebar-ring": p.foreground,
+    "--sidebar-accent": p.accent,
+    "--sidebar-accent-foreground": onColorOf(p, "accent"),
+    "--muted": mix(p.background, p.foreground, 0.92),
+    // Si el gris calculado no se lee, se usa el texto normal.
+    "--muted-foreground": contrastRatio(mutedText, p.background) >= MIN_TEXT_CONTRAST ? mutedText : p.foreground,
+    "--border": border,
+    "--input": border,
+    "--sidebar-border": border,
+  };
+  for (const c of ["secondary", "accent", "destructive", "success", "warning"] as const) {
+    vars[`--${c}`] = p[c];
+    vars[`--${c}-foreground`] = onColorOf(p, c);
+  }
+  return vars;
+}
+
+function block(selector: string, p: Palette): string {
+  const body = Object.entries(toCssVariables(p))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, value]) => `${name}:${value};`)
+    .join("");
+  return `${selector}{${body}}`;
+}
+
+// CSS con las variables de ambos modos; el oscuro usa la clase .dark.
+// html:root y html.dark son más específicos que :root y .dark de
+// globals.css, así la paleta gana sin depender del orden de carga.
+// Cada paleta pasa por sanitizePalette: aunque alguien olvide validar antes,
+// ningún valor que no sea un hex llega al <style> (no se puede inyectar CSS).
+export function paletteCss(palettes: Record<ThemeMode, Palette>): string {
+  return (
+    block("html:root", sanitizePalette(palettes.light, "light")) +
+    block("html.dark", sanitizePalette(palettes.dark, "dark"))
+  );
+}
