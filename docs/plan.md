@@ -17,4 +17,5 @@
 
 ## Próximos pasos
 
+- Usar `useUserInvalidAria` y los mensajes por campo (como en `contact-form.tsx`) en el perfil y en el editor de páginas (DT-014).
 - [A DEFINIR]
